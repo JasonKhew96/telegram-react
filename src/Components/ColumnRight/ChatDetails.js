@@ -224,6 +224,14 @@ class ChatDetails extends React.Component {
         }
     };
 
+    handleChatIdHint = () => {
+        const { t, chatId } = this.props;
+        
+        copy(chatId);
+        
+        this.handleScheduledAction(t('LinkCopied'));
+    }
+
     handleUsernameHint = () => {
         const { t, chatId } = this.props;
         const username = getChatUsername(chatId);
@@ -471,6 +479,19 @@ class ChatDetails extends React.Component {
                         />
                         {!isMe && (
                             <List className='chat-details-items'>
+                                <ListItem button className='list-item-rounded' alignItems='flex-start' onClick={this.handleChatIdHint}>
+                                    <ListItemIcon>
+                                        <ErrorOutlineIcon className='chat-details-info-icon' />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary={
+                                            <Typography variant='inherit' noWrap>
+                                                {chatId}
+                                            </Typography>
+                                        }
+                                        secondary="ID"
+                                    />
+                                 </ListItem>
                                 {bio && (
                                     <ListItem className='list-item-rounded' alignItems='flex-start'>
                                         <ListItemIcon>
