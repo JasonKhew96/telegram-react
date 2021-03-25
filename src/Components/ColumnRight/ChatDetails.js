@@ -45,7 +45,7 @@ import {
     getGroupChatMembers,
     getChatFullInfo,
     isPrivateChat,
-    isMeChat, isChannelChat
+    isMeChat, isChannelChat, isSupergroup, getSupergroupId
 } from '../../Utils/Chat';
 import { getUserStatusOrder } from '../../Utils/User';
 import { loadUsersContent, loadChatsContent } from '../../Utils/File';
@@ -309,6 +309,10 @@ class ChatDetails extends React.Component {
         }
     };
 
+    handleOpenLinkedChat = linkedChatId => {
+        openChat(linkedChatId, null, false);
+    }
+
     handleOpenUser = userId => {
         openUser(userId, true);
     };
@@ -442,6 +446,15 @@ class ChatDetails extends React.Component {
             openChatTitle = t('OpenGroup');
         }
 
+        let linkedChatId = 0;
+        if (isSupergroup(chatId)) {
+            const supergroupId = getSupergroupId(chatId);
+            const fullInfo = SupergroupStore.getFullInfo(supergroupId);
+            if (fullInfo && fullInfo.linked_chat_id) {
+                linkedChatId = fullInfo.linked_chat_id;
+            }
+        }
+
         let chatUrl = ''
         if (username) {
             if (isPrivateChat(chatId)) {
@@ -541,6 +554,18 @@ class ChatDetails extends React.Component {
                                             primary={
                                                 <Typography color='primary' variant='inherit' noWrap>
                                                     {openChatTitle.toUpperCase()}
+                                                </Typography>
+                                            }
+                                            style={{ paddingLeft: 40 }}
+                                        />
+                                    </ListItem>
+                                )}
+                                {!popup && linkedChatId != 0 && (
+                                    <ListItem button className='list-item-rounded' alignItems='flex-start' onClick={() => this.handleOpenLinkedChat(linkedChatId)}>
+                                        <ListItemText
+                                            primary={
+                                                <Typography color='primary' variant='inherit' noWrap>
+                                                    {isGroup ? t('OpenChannel').toUpperCase() : t('OpenGroup').toUpperCase()}
                                                 </Typography>
                                             }
                                             style={{ paddingLeft: 40 }}
