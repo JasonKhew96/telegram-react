@@ -1,0 +1,29 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+    - name: npm ci
+      run: npm ci
+    - name: Copy tdweb files
+      run: cp -v node_modules/tdweb/dist/* public/
+    - name: Build
+      env:
+        REACT_APP_TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+        REACT_APP_TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+      run: CI='' npm run build
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@4.1.0
+      with:
+        branch: gh-pages
+        folder: build
