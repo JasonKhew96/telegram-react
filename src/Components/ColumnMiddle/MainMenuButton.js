@@ -16,6 +16,7 @@ import ReportOutlinedIcon from '@material-ui/icons/ReportOutlined';
 import CallOutlinedIcon from '@material-ui/icons/CallOutlined';
 import BlockIcon from '../../Assets/Icons/Block';
 import BroomIcon from '../../Assets/Icons/Broom';
+import ChannelIcon from '../../Assets/Icons/Channel';
 import DeleteIcon from '../../Assets/Icons/Delete';
 import GroupIcon from '../../Assets/Icons/Group';
 import MoreVertIcon from '../../Assets/Icons/More';
@@ -32,7 +33,7 @@ import {
     canSwitchBlocked,
     getChatSender,
     canManageVoiceChats,
-    canBeReported, getChatUserId, canBeCalled
+    canBeReported, getChatUserId, canBeCalled, isGroupChat, isSupergroup, getSupergroupId
 } from '../../Utils/Chat';
 import { clearHistory, leaveChat, openReportChat } from '../../Actions/Chat';
 import { requestBlockSender, unblockSender } from '../../Actions/Message';
@@ -42,7 +43,9 @@ import CallStore from '../../Stores/CallStore';
 import ChatStore from '../../Stores/ChatStore';
 import LStore from '../../Stores/LocalizationStore';
 import MessageStore from '../../Stores/MessageStore';
+import SupergroupStore from '../../Stores/SupergroupStore';
 import TdLibController from '../../Controllers/TdLibController';
+import { openChat } from '../../Actions/Client';
 import './MainMenuButton.css';
 
 class MainMenuButton extends React.Component {
@@ -67,6 +70,11 @@ class MainMenuButton extends React.Component {
     handleMenuClose = () => {
         this.setState({ anchorEl: null });
     };
+
+    handleLinkedChat = linkedChatId => {
+        this.handleMenuClose();
+        openChat(linkedChatId, null, false);
+    }
 
     handleChatInfo = () => {
         this.handleMenuClose();
@@ -160,6 +168,15 @@ class MainMenuButton extends React.Component {
         const chat = ChatStore.get(chatId);
         if (!chat) return null;
 
+        let linkedChatId = 0;
+        if (isSupergroup(chatId)) {
+            const supergroupId = getSupergroupId(chatId);
+            const fullInfo = SupergroupStore.getFullInfo(supergroupId);
+            if (fullInfo && fullInfo.linked_chat_id) {
+                linkedChatId = fullInfo.linked_chat_id;
+            }
+        }
+
         const { is_blocked, voice_chat_group_call_id } = chat;
 
         const clearHistory = canClearHistory(chatId);
@@ -196,6 +213,14 @@ class MainMenuButton extends React.Component {
                         vertical: 'top',
                         horizontal: 'right'
                     }}>
+                    { linkedChatId != 0 && (
+                        <MenuItem onClick={() => this.handleLinkedChat(linkedChatId)}>
+                            <ListItemIcon>
+                            {isGroupChat(chatId) ? <ChannelIcon /> : <GroupIcon />}
+                            </ListItemIcon>
+                            <ListItemText primary={isGroupChat(chatId) ? t('OpenChannel') : t('OpenGroup')} />
+                        </MenuItem>
+                    )}
                     { CallStore.p2pCallsEnabled && called && (
                         <MenuItem onClick={this.handleStartP2PCall}>
                             <ListItemIcon>
