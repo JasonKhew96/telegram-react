@@ -22,6 +22,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 import Popover from '@material-ui/core/Popover';
+import AddIcon from '../../Assets/Icons/Add';
 import CloseIcon from '../../Assets/Icons/Close';
 import CopyIcon from '../../Assets/Icons/Copy';
 import DeleteIcon from '../../Assets/Icons/Delete';
@@ -154,6 +155,23 @@ class MessageMenu extends React.PureComponent {
         clearSelection();
         onClose(event);
         replyMessage(chatId, messageId);
+    };
+
+    handleRepeat = event => {
+        const { chatId, messageId, onClose } = this.props;
+
+        clearSelection();
+        onClose(event);
+        
+        TdLibController.send({
+            '@type': 'forwardMessages',
+            chat_id: chatId,
+            from_chat_id: chatId,
+            message_ids: [messageId],
+            disable_notifications: false,
+            from_background: false,
+            as_album: false
+        });
     };
 
     handlePin = event => {
@@ -300,6 +318,14 @@ class MessageMenu extends React.PureComponent {
                                     <ShareIcon style={{transform: 'scaleX(-1)'}}/>
                                 </ListItemIcon>
                                 <ListItemText primary={t('Reply')} />
+                            </MenuItem>
+                        )}
+                        {canBeReplied && (
+                            <MenuItem onClick={this.handleRepeat}>
+                                <ListItemIcon>
+                                    <AddIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="+1" />
                             </MenuItem>
                         )}
                         {canBePinned && (
